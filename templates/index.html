@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css">
+    <title>Klasifikasi Kerang Abalone</title>
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background: url('https://images.fineartamerica.com/images-medium-large-5/special-shells-garry-gay.jpg') no-repeat center center fixed;
+        background-size: cover;
+    }
+
+    .container {
+        background-color: rgba(255, 255, 255, 0.4);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        width: 500px;
+    }
+    .container h1 {
+        font-family: 'Dancing Script', cursive;
+        margin-bottom: 20px;
+        font-size: 40px;
+    }
+    .container input {
+        width: calc(100% - 22px);
+        padding: 10px;
+        margin: 5px 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    .container button {
+        width: 100%;
+        padding: 10px;
+        background-color: #FF9EAA;
+        border: none;
+        border-radius: 5px;
+        color: white;
+        font-size: 16px;
+    }
+    .container button:hover {
+        background-color: #F075AA;
+    }
+    .result {
+        margin-top: 20px;
+        font-size: 22px;
+        color: #333;
+        font-weight: bold;
+    }
+</style>
+<body>
+    <div class="container">
+        <h1>Klasifikasi Kerang Abalone</h1>
+        <form id="train-form">
+            <button type="submit">Train Data</button>
+        </form>
+        <p id="data-train"></p>
+        <form id="predict">
+            <input type="number" id="length" placeholder="Length" required>
+            <input type="number" id="diameter" placeholder="Diameter" required>
+            <input type="number" id="height" placeholder="Height" required>
+            <input type="number" id="wholeweight" placeholder="Whole Weight" required>
+            <input type="number" id="shuckedweight" placeholder="Shucked Weight" required>
+            <input type="number" id="visceraweight" placeholder="Viscera Weight" required>
+            <input type="number" id="shellweight" placeholder="Shell Weight" required>
+            <button type="submit">Predict</button>
+        </form>
+        <p id="predict-result"></p>
+    </div>
+
+    <script>
+        document.getElementById('train-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetch('/train', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('data-train').innerText = 
+                    `Train Accuracy (k=3): ${data.train_accuracy3}\nTest Accuracy (k=3): ${data.test_accuracy3}\n` +
+                    `Train Accuracy (k=5): ${data.train_accuracy5}\nTest Accuracy (k=5): ${data.test_accuracy5}`;
+            });
+        });
+
+        document.getElementById('predict').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = {
+                data: [
+                    parseFloat(document.getElementById('length').value),
+                    parseFloat(document.getElementById('diameter').value),
+                    parseFloat(document.getElementById('height').value),
+                    parseFloat(document.getElementById('wholeweight').value),
+                    parseFloat(document.getElementById('shuckedweight').value),
+                    parseFloat(document.getElementById('visceraweight').value),
+                    parseFloat(document.getElementById('shellweight').value)
+                ],
+            };
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('predict-result').innerText = `Error: ${data.error}`;
+                } else {
+                    document.getElementById('predict-result').innerText = `Prediction: ${data.prediction}`;
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>
